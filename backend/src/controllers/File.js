@@ -1,0 +1,23 @@
+const File = require('../models/File'),
+    Box = require('../models/Box');
+
+class fileController {
+    async store(req, res) {
+        const box = await Box.findById(req.params.id);
+
+        const file = await File.create({
+            title: req.file.originalname,
+            path: req.file.key
+        });
+
+        box.files.push(file);
+
+        await box.save();
+
+        req.io.sockets.in(box._id).emit('File', file);
+
+        return res.json(file);
+    }
+}
+
+module.exports = new fileController();
